@@ -5,6 +5,10 @@ import (
 	"github.com/my-stocks-pro/redis-service/engine"
 	"fmt"
 	"os"
+	"os/signal"
+	"time"
+	"context"
+	"net/http"
 )
 
 func main() {
@@ -19,12 +23,35 @@ func main() {
 
 	redis := infrastructure.NewRedis(config)
 
-	server := engine.New(config, logger, redis)
+	service := engine.New(config, logger, redis)
 
-	server.InitMux()
+	service.InitMux()
 
-	if err := server.Engine.Run(config.Port); err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
+	serverHTTP := &http.Server{
+		Addr:    config.Port,
+		Handler: service.Engine,
 	}
+
+	go func() {
+		if err := serverHTTP.ListenAndServe(); err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	signal.Notify(service.QuitOS, os.Interrupt)
+	select {
+	case <-service.QuitOS:
+		logger.Info("Shutdown Server by OS signal...")
+	case <-service.QuitRPC:
+		logger.Info("Shutdown Server by RPC signal...")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := serverHTTP.Shutdown(ctx); err != nil {
+		logger.Error(fmt.Sprintf("Server Shutdown: %s", err.Error()))
+	}
+
+	logger.Info("Server exiting")
 }

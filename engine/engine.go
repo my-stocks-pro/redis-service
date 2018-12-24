@@ -13,12 +13,12 @@ const (
 	rejected = "rejected"
 )
 
-func (s *Server) InitMux() {
+func (s *Service) InitMux() {
 	s.Engine.GET("/:service", s.GetHandler)
 	s.Engine.POST("/:service", s.GetHandler)
 }
 
-func (s *Server) GetHandler(c *gin.Context) {
+func (s *Service) GetHandler(c *gin.Context) {
 	serviceType := c.Param("service")
 	_, ok := s.handler[serviceType]
 	if !ok {
@@ -27,7 +27,7 @@ func (s *Server) GetHandler(c *gin.Context) {
 	s.handler[serviceType].Handle(c)
 }
 
-func (s *Server) HandlerConstruct(serviceType string) handler.Handler {
+func (s *Service) HandlerConstruct(serviceType string) handler.Handler {
 	switch serviceType {
 	case version:
 		return handler.NewVersion(s.config)
