@@ -35,7 +35,6 @@ func main() {
 	go func() {
 		if err := serverHTTP.ListenAndServe(); err != nil {
 			logger.Error(err.Error())
-			os.Exit(1)
 		}
 	}()
 
