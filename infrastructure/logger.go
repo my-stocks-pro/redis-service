@@ -16,7 +16,7 @@ type Logger interface {
 	Error(msg string)
 	Info(msg string)
 	ContextError(c *gin.Context, status int, err error)
-	ContextSuccess(c *gin.Context, status int, err error)
+	ContextSuccess(c *gin.Context, status int)
 }
 
 type LoggerType struct {
@@ -63,10 +63,10 @@ func (l LoggerType) ContextError(c *gin.Context, status int, err error) {
 	})
 }
 
-func (l LoggerType) ContextSuccess(c *gin.Context, status int, err error) {
-	l.Info(fmt.Sprintf("STATUS: %d, ErrorMessage: %s", status, err))
+func (l LoggerType) ContextSuccess(c *gin.Context, status int) {
+	l.Info(fmt.Sprintf("STATUS: %d, ErrorMessage: NIL", status))
 	c.JSON(status, gin.H{
 		"status": status,
-		"error":  err,
+		"error":  nil,
 	})
 }

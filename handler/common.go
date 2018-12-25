@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/my-stocks-pro/redis-service/infrastructure"
 	"net/http"
+	"github.com/pkg/errors"
 )
 
 type Common interface {
@@ -53,7 +54,7 @@ func (s TypeCommon) Handle(c *gin.Context) {
 		}
 
 	case http.MethodPost:
-		if err = s.redis.Set(body.Key, body.Val, db); err != nil {
+		if err := s.redis.Set(body.Key, body.Val, db); err != nil {
 			s.logger.ContextError(c, http.StatusInternalServerError, err)
 			return
 		}
@@ -66,9 +67,9 @@ func (s TypeCommon) Handle(c *gin.Context) {
 		}
 
 	default:
-		c.JSON(http.StatusMethodNotAllowed, "Method Not Allowed")
+		s.logger.ContextError(c, http.StatusMethodNotAllowed, errors.New("Method Not Allowed"))
 		return
 	}
 
-	s.logger.ContextSuccess(c, http.StatusOK, nil)
+	s.logger.ContextSuccess(c, http.StatusOK)
 }
