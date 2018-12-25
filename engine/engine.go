@@ -16,6 +16,7 @@ const (
 func (s *Service) InitMux() {
 	s.Engine.GET("/:service", s.GetHandler)
 	s.Engine.POST("/:service", s.GetHandler)
+	s.Engine.DELETE("/:service", s.GetHandler)
 }
 
 func (s *Service) GetHandler(c *gin.Context) {

@@ -49,10 +49,8 @@ func (s TypeCommon) Handle(c *gin.Context) {
 		_, err = c.Writer.Write(val)
 		if err != nil {
 			s.logger.ContextError(c, http.StatusInternalServerError, err)
+			return
 		}
-
-		s.logger.ContextSuccess(c, http.StatusOK, nil)
-		return
 
 	case http.MethodPost:
 		if err = s.redis.Set(body.Key, body.Val, db); err != nil {
@@ -60,7 +58,17 @@ func (s TypeCommon) Handle(c *gin.Context) {
 			return
 		}
 
-		s.logger.ContextSuccess(c, http.StatusOK, nil)
+	case http.MethodDelete:
+		err := s.redis.Delete(body.Key, db)
+		if err != nil {
+			s.logger.ContextError(c, http.StatusInternalServerError, err)
+			return
+		}
+
+	default:
+		c.JSON(http.StatusMethodNotAllowed, "Method Not Allowed")
 		return
 	}
+
+	s.logger.ContextSuccess(c, http.StatusOK, nil)
 }

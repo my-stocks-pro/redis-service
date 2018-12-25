@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/my-stocks-pro/redis-service/infrastructure"
+	"net/http"
 )
 
 type Health interface {
@@ -22,13 +23,20 @@ func NewHealth(c infrastructure.Config, r infrastructure.Redis) HealthType {
 }
 
 func (h HealthType) Handle(c *gin.Context) {
-	redisStatus := true
-	if err := h.redis.Ping(); err != nil {
-		redisStatus = false
+
+	switch c.Request.Method {
+	case http.MethodGet:
+		redisStatus := true
+		if err := h.redis.Ping(); err != nil {
+			redisStatus = false
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"service": true,
+			"redisDB": redisStatus,
+		})
+	default:
+		c.JSON(http.StatusMethodNotAllowed, "Method Not Allowed")
 	}
 
-	c.JSON(200, gin.H{
-		"service": true,
-		"redisDB": redisStatus,
-	})
 }

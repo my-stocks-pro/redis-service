@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"time"
 	"github.com/gin-gonic/gin"
 	"github.com/my-stocks-pro/redis-service/infrastructure"
+	"net/http"
+	"time"
 )
 
 type Version interface {
@@ -21,10 +22,17 @@ func NewVersion(c infrastructure.Config) TypeVersion {
 }
 
 func (v TypeVersion) Handle(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"startTime": v.config.StartDate,
-		"currDate":  time.Now().Format("2006-01-02 15:04"),
-		"version":   "1.0",
-		"service":   v.config.Name,
-	})
+
+	switch c.Request.Method {
+	case http.MethodGet:
+		c.JSON(http.StatusOK, gin.H{
+			"startTime": v.config.StartDate,
+			"currDate":  time.Now().Format("2006-01-02 15:04"),
+			"version":   "1.0",
+			"service":   v.config.Name,
+		})
+	default:
+		c.JSON(http.StatusMethodNotAllowed, "Method Not Allowed")
+	}
+
 }

@@ -10,6 +10,7 @@ import (
 type Redis interface {
 	Get(key string, db int) ([]byte, error)
 	Set(key string, val []byte, db int) error
+	Delete(key string, db int) error
 	GetDB(keyRedisDB string, serviceName string) (int, error)
 	Ping() error
 }
@@ -70,8 +71,7 @@ func (r RedisType) get(key string, client *redis.Client) ([]byte, error) {
 	return blob, nil
 }
 
-func (r RedisType) getAll(client *redis.Client) ([]byte, error) {
-
+func (r RedisType) getKeys(client *redis.Client) ([]string, error) {
 	blob, err := client.Get("*").Bytes()
 	if err != nil {
 		return nil, err
@@ -79,6 +79,16 @@ func (r RedisType) getAll(client *redis.Client) ([]byte, error) {
 
 	var keys []string
 	if err = json.Unmarshal(blob, &keys); err != nil {
+		return nil, err
+	}
+
+	return keys, nil
+}
+
+func (r RedisType) getAll(client *redis.Client) ([]byte, error) {
+
+	keys, err := r.getKeys(client)
+	if err != nil {
 		return nil, err
 	}
 
@@ -91,7 +101,7 @@ func (r RedisType) getAll(client *redis.Client) ([]byte, error) {
 		res[key] = val
 	}
 
-	blob, err = json.Marshal(res)
+	blob, err := json.Marshal(res)
 	if err != nil {
 		return nil, err
 	}
@@ -130,4 +140,43 @@ func (r RedisType) GetDB(keyRedisDB string, serviceName string) (int, error) {
 	}
 
 	return db, nil
+}
+
+func (r RedisType) Delete(key string, db int) error {
+	client, err := r.newClient(db)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	if key == "*" {
+		return r.deleteAll(client)
+	}
+
+	return r.delete(key, client)
+}
+
+func (r RedisType) deleteAll(client *redis.Client) error {
+
+	keys, err := r.getKeys(client)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if err := r.delete(key, client); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r RedisType) delete(key string, client *redis.Client) error {
+
+	if err := client.Del(key).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
