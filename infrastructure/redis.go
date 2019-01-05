@@ -12,6 +12,10 @@ type Redis interface {
 	Set(key string, val []byte, db int) error
 	Delete(key string, db int) error
 	GetDB(keyRedisDB string, serviceName string) (int, error)
+	LLen(key string, db int) (int64, error)
+	LPop(key string, db int) ([]byte, error)
+	LPush(key string, val []byte, db int) error
+	RPush(key string, val []byte, db int) error
 	Ping() error
 }
 
@@ -179,4 +183,100 @@ func (r RedisType) delete(key string, client *redis.Client) error {
 	}
 
 	return nil
+}
+
+func (r RedisType) LLen(key string, db int) (int64, error) {
+	client, err := r.newClient(db)
+	if err != nil {
+		return 0, err
+	}
+	defer client.Close()
+
+	llen, err := r.lLen(key, client)
+	if err != nil {
+		return 0, err
+	}
+
+	return llen, nil
+}
+
+func (r RedisType) lLen(key string, client *redis.Client) (int64, error) {
+
+	llen, err := client.LLen(key).Result()
+	if err != nil {
+		return 0, err
+	}
+
+	return llen, nil
+}
+
+func (r RedisType) RPush(key string, val []byte, db int) error {
+	client, err := r.newClient(db)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	if err := r.rPush(key, val, client); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r RedisType) rPush(key string, val []byte, client *redis.Client) error {
+
+	if err := client.RPush(key, val).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r RedisType) LPush(key string, val []byte, db int) error {
+	client, err := r.newClient(db)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	if err := r.lPush(key, val, client); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r RedisType) lPush(key string, val []byte, client *redis.Client) error {
+
+	if err := client.LPush(key, val).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r RedisType) LPop(key string, db int) ([]byte, error) {
+	client, err := r.newClient(db)
+	if err != nil {
+		return nil, err
+	}
+	defer client.Close()
+
+	val, err := r.lPop(key, client)
+	if err != nil {
+		return nil, err
+	}
+
+	return val, nil
+}
+
+func (r RedisType) lPop(key string, client *redis.Client) ([]byte, error) {
+
+	val, err := client.LPop(key).Bytes()
+	if err != nil {
+		return nil, err
+	}
+
+	return val, nil
 }

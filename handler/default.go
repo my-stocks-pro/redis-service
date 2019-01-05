@@ -33,3 +33,18 @@ func (d DefaultType) Handle(c *gin.Context) {
 	}
 	d.logger.ContextError(c, http.StatusNotAcceptable, errors.New(fmt.Sprintf("Key: %s Not Acceptable", keyRedisDB)))
 }
+
+func (v TypeVersion) Post(c *gin.Context) error {
+
+	return nil
+}
+
+func (v TypeVersion) Put(c *gin.Context) error {
+
+	return nil
+}
+
+func (v TypeVersion) Delete(c *gin.Context) error {
+
+	return nil
+}

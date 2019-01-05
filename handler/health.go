@@ -7,7 +7,10 @@ import (
 )
 
 type Health interface {
-	Handle(c *gin.Context)
+	Get(c *gin.Context) error
+	Post(c *gin.Context) error
+	Put(c *gin.Context) error
+	Delete(c *gin.Context) error
 }
 
 type HealthType struct {
@@ -22,7 +25,7 @@ func NewHealth(c infrastructure.Config, r infrastructure.Redis) HealthType {
 	}
 }
 
-func (h HealthType) Handle(c *gin.Context) {
+func (h HealthType) Get(c *gin.Context) error {
 
 	switch c.Request.Method {
 	case http.MethodGet:
@@ -39,4 +42,19 @@ func (h HealthType) Handle(c *gin.Context) {
 		c.JSON(http.StatusMethodNotAllowed, "Method Not Allowed")
 	}
 
+}
+
+func (v HealthType) Post(c *gin.Context) error {
+
+	return nil
+}
+
+func (v HealthType) Put(c *gin.Context) error {
+
+	return nil
+}
+
+func (v HealthType) Delete(c *gin.Context) error {
+
+	return nil
 }

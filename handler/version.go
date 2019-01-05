@@ -8,7 +8,10 @@ import (
 )
 
 type Version interface {
-	Handle(c *gin.Context)
+	Get(c *gin.Context) error
+	Post(c *gin.Context) error
+	Put(c *gin.Context) error
+	Delete(c *gin.Context) error
 }
 
 type TypeVersion struct {
@@ -21,7 +24,7 @@ func NewVersion(c infrastructure.Config) TypeVersion {
 	}
 }
 
-func (v TypeVersion) Handle(c *gin.Context) {
+func (v TypeVersion) Get(c *gin.Context) error {
 
 	switch c.Request.Method {
 	case http.MethodGet:
@@ -35,4 +38,19 @@ func (v TypeVersion) Handle(c *gin.Context) {
 		c.JSON(http.StatusMethodNotAllowed, "Method Not Allowed")
 	}
 
+}
+
+func (v TypeVersion) Post(c *gin.Context) error {
+
+	return nil
+}
+
+func (v TypeVersion) Put(c *gin.Context) error {
+
+	return nil
+}
+
+func (v TypeVersion) Delete(c *gin.Context) error {
+
+	return nil
 }

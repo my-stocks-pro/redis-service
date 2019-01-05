@@ -8,7 +8,10 @@ import (
 )
 
 type Common interface {
-	Handle(c *gin.Context)
+	Get(c *gin.Context) error
+	Post(c *gin.Context) error
+	Put(c *gin.Context) error
+	Delete(c *gin.Context) error
 }
 
 type TypeCommon struct {
@@ -25,9 +28,11 @@ func NewCommon(c infrastructure.Config, l infrastructure.Logger, r infrastructur
 	}
 }
 
-func (s TypeCommon) Handle(c *gin.Context) {
+func (s TypeCommon) Get(c *gin.Context) error {
 	serviceName := "service"
-	db, err := s.redis.GetDB(c.Param(serviceName), serviceName)
+	serviceType := c.Param(serviceName)
+
+	db, err := s.redis.GetDB(serviceType, serviceName)
 	if err != nil {
 		s.logger.ContextError(c, http.StatusInternalServerError, err)
 		return
@@ -38,6 +43,7 @@ func (s TypeCommon) Handle(c *gin.Context) {
 		s.logger.ContextError(c, http.StatusInternalServerError, err)
 		return
 	}
+
 
 	switch c.Request.Method {
 	case http.MethodGet:
@@ -72,4 +78,20 @@ func (s TypeCommon) Handle(c *gin.Context) {
 	}
 
 	s.logger.ContextSuccess(c, http.StatusOK)
+}
+
+
+func (v TypeCommon) Post(c *gin.Context) error {
+
+	return nil
+}
+
+func (v TypeCommon) Put(c *gin.Context) error {
+
+	return nil
+}
+
+func (v TypeCommon) Delete(c *gin.Context) error {
+
+	return nil
 }

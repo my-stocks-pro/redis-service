@@ -12,7 +12,7 @@ type Config struct {
 func NewConfig() Config {
 	return Config{
 		StartDate: time.Now().Format("2006-01-02 15:04"),
-		Name:      "api-gateway",
+		Name:      "redis-service",
 		Port:      ":9006",
 		RedisDB: map[string]int{
 			"earnings": 1,
