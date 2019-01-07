@@ -70,7 +70,6 @@ func (p TypePinterest) Get(c *gin.Context) error {
 
 	lLen, err := p.redis.LLen(key, db)
 	if err != nil {
-		p.logger.ContextError(c, http.StatusInternalServerError, err)
 		return err
 	}
 

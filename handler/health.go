@@ -44,17 +44,17 @@ func (h HealthType) Get(c *gin.Context) error {
 
 }
 
-func (v HealthType) Post(c *gin.Context) error {
+func (h HealthType) Post(c *gin.Context) error {
 
 	return nil
 }
 
-func (v HealthType) Put(c *gin.Context) error {
+func (h HealthType) Put(c *gin.Context) error {
 
 	return nil
 }
 
-func (v HealthType) Delete(c *gin.Context) error {
+func (h HealthType) Delete(c *gin.Context) error {
 
 	return nil
 }

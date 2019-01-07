@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"errors"
+	"fmt"
 )
 
 const (
@@ -23,36 +24,12 @@ func (s *Service) InitMux() {
 	s.Engine.DELETE("/:service", s.HandleFunc)
 }
 
-func (s *Service) getHandler(serviceName string) handler.Handler {
-	_, ok := s.handler[serviceName]
-	if !ok {
-		s.handler[serviceName] = s.HandlerConstruct(serviceName)
-	}
-	return s.handler[serviceName]
-}
-
-func (s *Service) HandlerConstruct(serviceName string) handler.Handler {
-	switch serviceName {
-	case version:
-		return handler.NewVersion(s.config)
-	case health:
-		return handler.NewHealth(s.config, s.redis)
-	case earnings, approved, rejected:
-		return handler.NewCommon(s.config, s.logger, s.redis)
-	case pinterest:
-		return handler.NewPinterest(s.config, s.logger, s.redis)
-	default:
-		return nil
-	}
-	return nil
-}
-
 func (s *Service) HandleFunc(c *gin.Context) {
 	serviceType := c.Param("service")
 
 	h := s.getHandler(serviceType)
 	if h == nil {
-		//TODO
+		s.logger.ContextError(c, http.StatusInternalServerError, fmt.Errorf("service: <%s> not availible", serviceType))
 		return
 	}
 
@@ -83,5 +60,34 @@ func (s *Service) HandleFunc(c *gin.Context) {
 	}
 
 	s.logger.ContextSuccess(c, http.StatusOK)
-
 }
+
+func (s *Service) getHandler(serviceName string) handler.Handler {
+	_, ok := s.handler[serviceName]
+	if !ok {
+		if h := s.HandlerConstruct(serviceName); h == nil {
+			return nil
+		} else {
+			s.handler[serviceName] = h
+		}
+	}
+	return s.handler[serviceName]
+}
+
+func (s *Service) HandlerConstruct(serviceName string) handler.Handler {
+	switch serviceName {
+	case version:
+		return handler.NewVersion(s.config)
+	case health:
+		return handler.NewHealth(s.config, s.redis)
+	case earnings, approved, rejected:
+		return handler.NewCommon(s.config, s.logger, s.redis)
+	case pinterest:
+		return handler.NewPinterest(s.config, s.logger, s.redis)
+	default:
+		return nil
+	}
+	return nil
+}
+
+
